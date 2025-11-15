@@ -25,7 +25,7 @@ contract ArbitrageTest is TestHelpers {
         // Create price imbalance by heavy buying on one outcome
         vm.startPrank(alice);
         collateral.approve(market, 100_000 * 1e18);
-        CategoricalMarket(market).buyShares(0, 0, 100_000 * 1e18);
+        CategoricalMarket(market).buyShares(0, 0, type(uint256).max);
         vm.stopPrank();
 
         // Check prices - should have shifted
@@ -56,7 +56,7 @@ contract ArbitrageTest is TestHelpers {
         // Create significant price imbalance
         vm.startPrank(alice);
         collateral.approve(market, 200_000 * 1e18);
-        CategoricalMarket(market).buyShares(0, 0, 200_000 * 1e18);
+        CategoricalMarket(market).buyShares(0, 0, type(uint256).max);
         vm.stopPrank();
 
         // Prices should diverge significantly
@@ -104,7 +104,7 @@ contract ArbitrageTest is TestHelpers {
         // Create price imbalance by buying heavily
         vm.startPrank(bob);
         collateral.approve(market, 100_000 * 1e18);
-        CategoricalMarket(market).buyShares(0, 0, 100_000 * 1e18);
+        CategoricalMarket(market).buyShares(0, 0, type(uint256).max);
         vm.stopPrank();
 
         // Now prices are imbalanced
@@ -203,7 +203,7 @@ contract ArbitrageTest is TestHelpers {
 
             vm.startPrank(alice);
             collateral.approve(currentMarket, 50_000 * 1e18);
-            CategoricalMarket(currentMarket).buyShares(0, 0, 50_000 * 1e18);
+            CategoricalMarket(currentMarket).buyShares(0, 0, type(uint256).max);
             vm.stopPrank();
         }
 
