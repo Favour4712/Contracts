@@ -55,11 +55,12 @@ contract TestHelpers is Test {
         feeManager = new FeeManager(address(collateral), treasury);
         socialPredictions = new SocialPredictions();
 
-        // Deploy implementation (note: needs actual token addresses, will be set by factory)
+        // Deploy implementation with dummy addresses (not used in clones)
+        // Actual token addresses are set in initialize() per clone
         marketImplementation = new CategoricalMarket(
             address(collateral),
-            address(0), // Placeholder, set per market
-            address(0), // Placeholder, set per market
+            address(0x1111), // Dummy - not used since tokens set in initialize()
+            address(0x2222), // Dummy - not used since tokens set in initialize()
             address(feeManager),
             address(socialPredictions)
         );

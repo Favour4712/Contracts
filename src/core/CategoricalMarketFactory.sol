@@ -159,13 +159,15 @@ contract CategoricalMarketFactory is Ownable {
         // Deploy market via minimal proxy with deterministic address
         market = Clones.cloneDeterministic(marketImplementation, salt);
 
-        // Initialize market
+        // Initialize market with token addresses
         CategoricalMarket(market).initialize(
             metadataURI,
             numOutcomes,
             resolutionTime,
             oracleResolver,
-            initialLiquidity
+            initialLiquidity,
+            outcomeTokenAddr,
+            lpTokenAddr
         );
 
         // Register market with fee manager
