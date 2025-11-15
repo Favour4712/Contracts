@@ -461,6 +461,11 @@ contract CategoricalMarket is ReentrancyGuard {
             (lpTokensAmount * market.liquidityPool) /
             totalSupply;
 
+        // Ensure we don't remove more than available
+        if (collateralAmount > market.liquidityPool) {
+            collateralAmount = market.liquidityPool;
+        }
+
         // Update state
         market.liquidityPool -= collateralAmount;
         market.totalCollateral -= collateralAmount;
