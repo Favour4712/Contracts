@@ -272,6 +272,9 @@ contract CategoricalMarket is ReentrancyGuard {
             market.liquidityParameter
         );
 
+        // Approve FeeManager for fees (approve maxCost to cover fees)
+        collateralToken.approve(address(feeManager), maxCost);
+
         // Collect fees
         (uint256 protocolFee, uint256 lpFee) = feeManager.collectTradeFees(
             address(this),
@@ -283,7 +286,6 @@ contract CategoricalMarket is ReentrancyGuard {
         if (cost > maxCost) revert Errors.SlippageExceeded();
 
         // Transfer collateral from user (including fees)
-        collateralToken.approve(address(feeManager), protocolFee + lpFee);
         bool success = collateralToken.transferFrom(
             msg.sender,
             address(this),
@@ -337,6 +339,9 @@ contract CategoricalMarket is ReentrancyGuard {
             market.liquidityParameter
         );
 
+        // Approve FeeManager for fees
+        collateralToken.approve(address(feeManager), basePayout);
+
         // Collect fees
         (uint256 protocolFee, uint256 lpFee) = feeManager.collectTradeFees(
             address(this),
@@ -355,8 +360,7 @@ contract CategoricalMarket is ReentrancyGuard {
         // Burn outcome tokens from user
         outcomeToken.burn(msg.sender, outcomeIndex, sharesToSell);
 
-        // Transfer fees
-        collateralToken.approve(address(feeManager), protocolFee + lpFee);
+        // Note: Fees are already transferred by collectTradeFees
 
         // Transfer payout to user
         bool success = collateralToken.transfer(msg.sender, payout);
@@ -409,9 +413,12 @@ contract CategoricalMarket is ReentrancyGuard {
         market.totalCollateral += amount;
 
         // Increase liquidity parameter to maintain market depth
-        market.liquidityParameter =
-            (market.liquidityParameter * (market.liquidityPool)) /
-            (market.liquidityPool - amount);
+        // For first liquidity, don't adjust (already set correctly in initialize)
+        if (market.liquidityPool > amount) {
+            market.liquidityParameter =
+                (market.liquidityParameter * market.liquidityPool) /
+                (market.liquidityPool - amount);
+        }
 
         // Mint LP tokens
         lpToken.mint(msg.sender, lpTokensAmount);
@@ -458,11 +465,12 @@ contract CategoricalMarket is ReentrancyGuard {
         market.liquidityPool -= collateralAmount;
         market.totalCollateral -= collateralAmount;
 
-        // Adjust liquidity parameter
-        if (market.liquidityPool > 0) {
+        // Adjust liquidity parameter (only if not removing all liquidity)
+        uint256 newPool = market.liquidityPool;
+        if (newPool > 0 && collateralAmount > 0) {
             market.liquidityParameter =
-                (market.liquidityParameter * market.liquidityPool) /
-                (market.liquidityPool + collateralAmount);
+                (market.liquidityParameter * newPool) /
+                (newPool + collateralAmount);
         }
 
         // Burn LP tokens
